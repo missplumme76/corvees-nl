@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Les Corvées — Négation NL</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--orange:#FF6B35;--orange-light:#FFF0EB;--orange-dark:#CC4E1A;--blue:#2D6BE4;--blue-light:#EBF1FD;--green:#1DB87A;--green-light:#E6F9F1;--red:#E84040;--red-light:#FDEAEA;--bg:#F5F4F0;--white:#FFFFFF;--text:#1A1A2E;--muted:#7B7B8F;--border:#E8E7E3;--shadow:0 2px 12px rgba(0,0,0,0.08);--radius:16px;--radius-sm:10px;--radius-pill:50px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);overflow-x:hidden}
+body{min-height:100dvh}
+
+.app-header{background:var(--white);padding:14px 20px 12px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;box-shadow:0 1px 8px rgba(0,0,0,0.06)}
+.app-logo{width:36px;height:36px;border-radius:10px;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.app-header-text{flex:1}
+.app-header-title{font-size:15px;font-weight:800;color:var(--text);line-height:1.2}
+.app-header-sub{font-size:12px;color:var(--muted);font-weight:600}
+.score-chip{background:var(--orange-light);color:var(--orange-dark);border-radius:var(--radius-pill);padding:6px 14px;font-size:13px;font-weight:800;flex-shrink:0;display:none}
+.score-chip.show{display:block}
+
+.progress-wrap{padding:0 20px;display:none}
+.progress-wrap.show{display:block}
+.progress-track{height:6px;background:var(--border);border-radius:3px;margin:10px 0 0}
+.progress-fill{height:6px;background:linear-gradient(90deg,var(--orange),#FF9F6A);border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-weight:600;margin-top:4px;padding-bottom:8px}
+
+.scroll-body{padding:20px 20px 100px}
+.view{display:none}
+.view.active{display:block}
+
+/* MENU */
+.menu-hero{background:var(--white);border-radius:var(--radius);padding:28px 20px 20px;margin-bottom:16px;text-align:center;box-shadow:var(--shadow)}
+.menu-emoji{font-size:48px;margin-bottom:10px}
+.menu-title{font-size:22px;font-weight:800;margin-bottom:6px}
+.menu-desc{font-size:14px;color:var(--muted);font-weight:600;line-height:1.5}
+.section-label{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.lock-msg{background:var(--red-light);color:var(--red);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:14px;display:none;text-align:center}
+.lock-msg.show{display:block}
+.level-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.level-card{background:var(--white);border-radius:var(--radius);padding:16px 18px;border:2px solid transparent;cursor:pointer;transition:all .2s;box-shadow:var(--shadow);position:relative}
+.level-card.selected{border-color:var(--orange);background:var(--orange-light)}
+.level-card.locked{opacity:.45;cursor:not-allowed}
+.level-card-row{display:flex;align-items:center;justify-content:space-between}
+.level-card-stars{font-size:15px;margin-bottom:3px}
+.level-card-name{font-size:15px;font-weight:800;margin-bottom:2px}
+.level-card-desc{font-size:12px;color:var(--muted);font-weight:600;line-height:1.4}
+.level-badge{display:inline-block;background:var(--green-light);color:#0E7A50;border-radius:var(--radius-pill);padding:2px 10px;font-size:11px;font-weight:800;margin-top:6px}
+.btn-start{width:100%;padding:18px;background:var(--orange);color:white;border:none;border-radius:var(--radius);font-size:17px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 4px 16px rgba(255,107,53,.35)}
+.btn-start:active{transform:scale(.97)}
+
+/* GAME */
+.q-card{background:var(--white);border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.q-mode-badge{display:inline-block;background:var(--bg);color:var(--muted);border-radius:var(--radius-pill);padding:4px 12px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.q-sentence{font-size:19px;font-weight:700;line-height:1.6;margin-bottom:8px}
+.blank{display:inline-block;min-width:70px;border-bottom:3px solid var(--orange);color:var(--orange);padding:0 4px;text-align:center}
+.blank-num{display:inline-block;min-width:34px;border-bottom:3px solid var(--orange);color:var(--orange);padding:0 4px;text-align:center;font-size:15px;font-weight:800}
+.q-hint{font-size:13px;color:var(--muted);font-weight:600;font-style:italic;margin-bottom:4px}
+.q-fr{font-size:13px;color:var(--blue);font-weight:700;background:var(--blue-light);border-radius:var(--radius-sm);padding:8px 12px;margin-top:8px}
+
+.choices{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.choice-btn{width:100%;padding:16px 18px;text-align:left;background:var(--white);border:2px solid var(--border);border-radius:var(--radius);font-size:16px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow)}
+.choice-btn:active{transform:scale(.98)}
+.choice-letter{width:32px;height:32px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--muted);flex-shrink:0}
+.choice-btn.correct{background:var(--green-light);border-color:var(--green);color:#0E7A50}
+.choice-btn.correct .choice-letter{background:var(--green);color:white}
+.choice-btn.wrong{background:var(--red-light);border-color:var(--red);color:var(--red)}
+.choice-btn.wrong .choice-letter{background:var(--red);color:white}
+.choice-btn.missed{background:var(--green-light);border-color:var(--green);opacity:.6;color:#0E7A50}
+.choice-btn:disabled{cursor:default;transform:none}
+
+.zone-label{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.built-area{min-height:58px;background:var(--white);border:2px dashed var(--border);border-radius:var(--radius);padding:10px 12px;font-size:15px;font-weight:700;line-height:2;margin-bottom:12px}
+.wchip{display:inline-flex;align-items:center;background:var(--orange-light);border:1.5px solid #FFBB99;border-radius:var(--radius-sm);padding:4px 12px;margin:3px 4px;cursor:pointer;font-size:14px;font-weight:700;color:var(--orange-dark)}
+.word-bank{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.wb-btn{background:var(--white);border:2px solid var(--border);border-radius:var(--radius-sm);padding:10px 16px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:var(--shadow)}
+.wb-btn:active{transform:scale(.95)}
+.wb-btn.used{opacity:.25;pointer-events:none}
+.build-controls{display:flex;gap:10px}
+.btn-clear{flex:1;padding:14px;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);font-size:14px;font-weight:800;color:var(--muted);cursor:pointer;font-family:'Nunito',sans-serif}
+.btn-verify{flex:2;padding:14px;background:var(--blue);border:none;border-radius:var(--radius);font-size:15px;font-weight:800;color:white;cursor:pointer;font-family:'Nunito',sans-serif}
+.btn-verify:active{transform:scale(.97)}
+
+.write-textarea{width:100%;min-height:70px;padding:14px 16px;background:var(--white);border:2px solid var(--border);border-radius:var(--radius);font-size:16px;font-weight:700;font-family:'Nunito',sans-serif;resize:none;outline:none;box-shadow:var(--shadow);transition:border-color .2s}
+.write-textarea:focus{border-color:var(--blue)}
+.write-textarea.ok{border-color:var(--green);background:var(--green-light);color:#0E7A50}
+.write-textarea.ko{border-color:var(--red);background:var(--red-light);color:var(--red)}
+
+.feedback{border-radius:var(--radius);padding:14px 16px;font-size:14px;font-weight:700;line-height:1.6;margin-bottom:14px;display:none}
+.feedback.show{display:block}
+.feedback.ok{background:var(--green-light);color:#0E7A50;border:1.5px solid #7ADDB6}
+.feedback.ko{background:var(--red-light);color:#C02020;border:1.5px solid #F5AAAA}
+.feedback .fb-icon{font-size:20px;margin-bottom:4px}
+
+.sticky-next{position:fixed;bottom:0;left:0;right:0;padding:12px 20px 28px;background:var(--bg);border-top:1px solid var(--border);display:none}
+.sticky-next.show{display:block}
+.btn-next{width:100%;padding:18px;background:var(--orange);color:white;border:none;border-radius:var(--radius);font-size:17px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 4px 16px rgba(255,107,53,.35)}
+
+/* END */
+.end-card{background:var(--white);border-radius:var(--radius);padding:32px 20px;text-align:center;box-shadow:var(--shadow);margin-bottom:16px}
+.end-trophy{font-size:56px;margin-bottom:8px}
+.end-title{font-size:22px;font-weight:800;margin-bottom:6px}
+.end-score{font-size:52px;font-weight:800;color:var(--orange);margin:10px 0}
+.end-msg{font-size:15px;color:var(--muted);font-weight:600;line-height:1.5;margin-bottom:12px}
+.end-unlock-msg{background:var(--green-light);color:#0E7A50;border-radius:var(--radius-sm);padding:12px 16px;font-size:14px;font-weight:700;display:none}
+.end-unlock-msg.show{display:block}
+.end-btns{display:flex;flex-direction:column;gap:10px}
+.btn-menu{padding:16px;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);font-size:16px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif}
+.btn-replay{padding:16px;background:var(--orange);border:none;border-radius:var(--radius);font-size:16px;font-weight:800;color:white;cursor:pointer;font-family:'Nunito',sans-serif}
+.stat-row{display:flex;justify-content:center;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.stat-dot{width:10px;height:10px;border-radius:50%}
+.stat-dot.ok{background:var(--green)}
+.stat-dot.ko{background:var(--red)}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-logo">🧹</div>
+  <div class="app-header-text">
+    <div class="app-header-title">Les corvées</div>
+    <div class="app-header-sub" id="header-sub">Négation en néerlandais</div>
+  </div>
+  <div class="score-chip" id="score-chip">0 pt</div>
+</header>
+
+<div class="progress-wrap" id="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="progress-label">
+    <span id="prog-left">Question 1/15</span>
+    <span id="prog-right">0%</span>
+  </div>
+</div>
+
+<div class="scroll-body">
+
+  <!-- MENU -->
+  <div class="view active" id="view-menu">
+    <div class="menu-hero">
+      <div class="menu-emoji">🧹</div>
+      <div class="menu-title">De corvees</div>
+      <div class="menu-desc">Entraîne-toi à la négation en néerlandais</div>
+    </div>
+    <div class="lock-msg" id="lock-msg"></div>
+    <div class="section-label">Choisis ton niveau</div>
+    <div class="level-list">
+
+      <div class="level-card selected" id="lcard-1" onclick="selectLevel('1')">
+        <div class="level-card-row">
+          <div>
+            <div class="level-card-stars">⭐</div>
+            <div class="level-card-name">Niveau 1 — Facile</div>
+            <div class="level-card-desc">al · nog niet · nog geen — phrases simples</div>
+          </div>
+          <span id="lock-1" style="font-size:20px;display:none">🔒</span>
+        </div>
+        <div id="badge-1" style="display:none"><span class="level-badge">✓ Réussi</span></div>
+      </div>
+
+      <div class="level-card locked" id="lcard-2" onclick="selectLevel('2')">
+        <div class="level-card-row">
+          <div>
+            <div class="level-card-stars">⭐⭐</div>
+            <div class="level-card-name">Niveau 2 — Intermédiaire</div>
+            <div class="level-card-desc">al · nog niet · nog geen — contextes variés</div>
+          </div>
+          <span id="lock-2" style="font-size:20px">🔒</span>
+        </div>
+        <div id="badge-2" style="display:none"><span class="level-badge">✓ Réussi</span></div>
+      </div>
+
+      <div class="level-card locked" id="lcard-3" onclick="selectLevel('3')">
+        <div class="level-card-row">
+          <div>
+            <div class="level-card-stars">⭐⭐⭐</div>
+            <div class="level-card-name">Niveau 3 — Difficile</div>
+            <div class="level-card-desc">al · nog niet · nog geen · niet (placement) · geen — tout mélangé</div>
+          </div>
+          <span id="lock-3" style="font-size:20px">🔒</span>
+        </div>
+        <div id="badge-3" style="display:none"><span class="level-badge">✓ Réussi</span></div>
+      </div>
+
+    </div>
+    <button class="btn-start" onclick="startGame()">Commencer →</button>
+  </div>
+
+  <!-- GAME -->
+  <div class="view" id="view-game">
+    <div class="q-card">
+      <div class="q-mode-badge" id="q-mode-badge">QCM</div>
+      <div class="q-sentence" id="q-sentence"></div>
+      <div class="q-hint" id="q-hint"></div>
+      <div class="q-fr" id="q-fr"></div>
+    </div>
+    <div id="zone-qcm" style="display:none"><div class="choices" id="qcm-choices"></div></div>
+    <div id="zone-build" style="display:none">
+      <div class="zone-label">Ta phrase :</div>
+      <div class="built-area" id="built-area"></div>
+      <div class="zone-label">Mots disponibles :</div>
+      <div class="word-bank" id="word-bank"></div>
+      <div class="build-controls">
+        <button class="btn-clear" onclick="buildClear()">Effacer</button>
+        <button class="btn-verify" onclick="buildCheck()">Vérifier ✓</button>
+      </div>
+    </div>
+    <div id="zone-write" style="display:none">
+      <div class="zone-label">Écris la phrase complète :</div>
+      <textarea class="write-textarea" id="write-input" placeholder="Ta réponse en néerlandais…" rows="2" oninput="autoResize(this)"></textarea>
+      <div style="margin-top:10px"><button class="btn-verify" style="width:100%" onclick="writeCheck()">Vérifier ✓</button></div>
+    </div>
+    <div class="feedback" id="g-feedback"></div>
+    <div style="height:80px"></div>
+  </div>
+
+  <!-- END -->
+  <div class="view" id="view-end">
+    <div class="end-card">
+      <div class="end-trophy" id="end-trophy"></div>
+      <div class="end-title" id="end-title"></div>
+      <div class="stat-row" id="stat-row"></div>
+      <div class="end-score" id="end-score"></div>
+      <div class="end-msg" id="end-msg"></div>
+      <div class="end-unlock-msg" id="end-unlock-msg"></div>
+    </div>
+    <div class="end-btns">
+      <button class="btn-replay" onclick="restartSame()">Rejouer ce niveau</button>
+      <button class="btn-menu" onclick="goMenu()">Retour au menu</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="sticky-next" id="sticky-next">
+  <button class="btn-next" id="btn-next" onclick="nextQ()">Question suivante →</button>
+</div>
+
+<script>
+/* ========== DONNÉES ========== */
+
+/* NIVEAU 1 : al / nog niet / nog geen — phrases simples */
+const data1=[
+  {type:'qcm',sentence:'Heb je ____ afgewassen?',fr:'As-tu déjà fait la vaisselle ?',hint:'L\'action est-elle déjà faite ?',choices:['al','nog niet','nog geen'],answer:'al',
+   expl:'<strong>Al</strong> = déjà : <em>Heb je al afgewassen?</em>'},
+  {type:'qcm',sentence:'Heb je je bed ____ opgemaakt?',fr:'As-tu déjà fait ton lit ?',hint:'L\'état est-il déjà atteint ?',choices:['al','nog niet','nog geen'],answer:'al',
+   expl:'<strong>Al</strong> = déjà : <em>Heb je je bed al opgemaakt?</em>'},
+  {type:'qcm',sentence:'Heb je de tafel al gedekt? — Nee, ____.',fr:'Non, pas encore.',hint:'L\'action n\'est pas encore accomplie',choices:['al','nog niet','nog geen'],answer:'nog niet',
+   expl:'<strong>Nog niet</strong> = pas encore (action) : <em>Nee, nog niet.</em>'},
+  {type:'qcm',sentence:'Heb je de vaatwasser ____ leeggemaakt?',fr:'As-tu déjà vidé le lave-vaisselle ?',hint:'L\'action est-elle déjà faite ?',choices:['al','nog niet','nog geen'],answer:'al',
+   expl:'<strong>Al</strong> = déjà : <em>Heb je de vaatwasser al leeggemaakt?</em>'},
+  {type:'qcm',sentence:'Heb je de vaatwasser al leeggemaakt? — Nee, ____.',fr:'Non, pas encore.',hint:'L\'action n\'est pas encore faite',choices:['al','nog niet','nog geen'],answer:'nog niet',
+   expl:'<strong>Nog niet</strong> = pas encore (action) : <em>Nee, nog niet.</em>'},
+  {type:'qcm',sentence:'Heeft ze de kamer ____ opgeruimd?',fr:'A-t-elle déjà rangé la chambre ?',hint:'L\'action est-elle déjà réalisée ?',choices:['al','nog niet','nog geen'],answer:'al',
+   expl:'<strong>Al</strong> = déjà : <em>Heeft ze de kamer al opgeruimd?</em>'},
+  {type:'qcm',sentence:'Heb je de boodschappen al gedaan? — Nee, ____.',fr:'Non, pas encore.',hint:'L\'action n\'est pas encore faite',choices:['al','nog niet','nog geen'],answer:'nog niet',
+   expl:'<strong>Nog niet</strong> = pas encore (action) : <em>Nee, nog niet.</em>'},
+  {type:'qcm',sentence:'Heb je de auto al gewassen? — Nee, ____.',fr:'Non, pas encore.',hint:'L\'action n\'est pas encore faite',choices:['al','nog niet','nog geen'],answer:'nog niet',
+   expl:'<strong>Nog niet</strong> = pas encore (action) : <em>Nee, nog niet.</em>'},
+  {type:'build',fr:'J\'ai déjà fait la vaisselle.',hint:'afwassen',words:['Ik','heb','al','afgewassen','.'],answer:['Ik','heb','al','afgewassen','.'],
+   expl:'<strong>Al</strong> entre l\'auxiliaire et le participe : <em>Ik heb al afgewassen.</em>'},
+  {type:'build',fr:'Je n\'ai pas encore fait mon lit.',hint:'het bed opmaken',words:['Ik','heb','mijn','bed','nog niet','opgemaakt','.'],answer:['Ik','heb','mijn','bed','nog niet','opgemaakt','.'],
+   expl:'<strong>Nog niet</strong> avant le participe : <em>Ik heb mijn bed nog niet opgemaakt.</em>'},
+  {type:'build',fr:'Elle n\'a pas encore arrosé les fleurs.',hint:'de bloemen water geven',words:['Ze','heeft','de','bloemen','nog niet','water','gegeven','.'],answer:['Ze','heeft','de','bloemen','nog niet','water','gegeven','.'],
+   expl:'<strong>Nog niet</strong> avant le participe : <em>Ze heeft de bloemen nog niet water gegeven.</em>'},
+  {type:'build',fr:'Il a déjà sorti le chien.',hint:'de hond uitlaten',words:['Hij','heeft','de','hond','al','uitgelaten','.'],answer:['Hij','heeft','de','hond','al','uitgelaten','.'],
+   expl:'<strong>Al</strong> avant le participe : <em>Hij heeft de hond al uitgelaten.</em>'},
+  {type:'write',fr:'A-t-elle déjà ciré les chaussures ?',hint:'de schoenen poetsen',answer:'Heeft ze de schoenen al gepoetst?',alts:['heeft ze de schoenen al gepoetst'],
+   expl:'<strong>Al</strong> avant le participe : <em>Heeft ze de schoenen al gepoetst?</em>'},
+  {type:'write',fr:'Elle a déjà rangé la chambre.',hint:'de kamer opruimen',answer:'Ze heeft de kamer al opgeruimd.',alts:['ze heeft de kamer al opgeruimd'],
+   expl:'<strong>Al</strong> avant le participe : <em>Ze heeft de kamer al opgeruimd.</em>'},
+  {type:'write',fr:'Il n\'a pas encore mis la table.',hint:'de tafel dekken',answer:'Hij heeft de tafel nog niet gedekt.',alts:['hij heeft de tafel nog niet gedekt'],
+   expl:'<strong>Nog niet</strong> avant le participe : <em>Hij heeft de tafel nog niet gedekt.</em>'},
+];
+
+/* NIVEAU 2 : al / nog niet / nog geen — contextes variés */
+const data2=[
+  {type:'qcm',sentence:'Is de garage al opgeruimd? — Nee, ____.',fr:'Non, pas encore.',hint:'L\'état n\'est pas encore atteint',choices:['nog niet','nog geen','al'],answer:'nog niet',
+   expl:'<strong>Nog niet</strong> pour nier un état pas encore atteint : <em>Nee, nog niet.</em>'},
+  {type:'qcm',sentence:'Is het bed al opgemaakt? — Nee, ____.',fr:'Non, pas encore.',hint:'L\'action n\'est pas encore faite',choices:['nog niet','nog geen','al'],answer:'nog niet',
+   expl:'<strong>Nog niet</strong> = pas encore (action) : <em>Nee, nog niet.</em>'},
+  {type:'qcm',sentence:'Heeft ze de tafel ____ afgeruimd?',fr:'A-t-elle déjà débarrassé la table ?',hint:'L\'action est-elle déjà accomplie ?',choices:['al','nog niet','nog geen'],answer:'al',
+   expl:'<strong>Al</strong> = déjà : <em>Heeft ze de tafel al afgeruimd?</em>'},
+  {type:'qcm',sentence:'Heeft ze de tafel al afgeruimd? — Nee, ____.',fr:'Non, pas encore.',hint:'Elle n\'a pas encore réalisé cette action',choices:['nog niet','nog geen','al'],answer:'nog niet',
+   expl:'<strong>Nog niet</strong> = pas encore (action) : <em>Nee, nog niet.</em>'},
+  {type:'qcm',sentence:'Heb je de hond ____ uitgelaten?',fr:'As-tu déjà promené le chien ?',hint:'L\'action est-elle déjà faite ?',choices:['al','nog niet','nog geen'],answer:'al',
+   expl:'<strong>Al</strong> = déjà : <em>Heb je de hond al uitgelaten?</em>'},
+  {type:'qcm',sentence:'Heb je de hond al uitgelaten? — Nee, ____.',fr:'Non, pas encore.',hint:'L\'action n\'est pas encore faite',choices:['nog niet','nog geen','al'],answer:'nog niet',
+   expl:'<strong>Nog niet</strong> = pas encore (action) : <em>Nee, nog niet.</em>'},
+  {type:'qcm',sentence:'Heeft ze de bloemen ____ water gegeven?',fr:'A-t-elle déjà arrosé les fleurs ?',hint:'L\'action est-elle déjà accomplie ?',choices:['al','nog niet','nog geen'],answer:'al',
+   expl:'<strong>Al</strong> = déjà : <em>Heeft ze de bloemen al water gegeven?</em>'},
+  {type:'qcm',sentence:'Is het gras ____ gemaaid?',fr:'Le gazon est-il déjà tondu ?',hint:'L\'état est-il déjà atteint ?',choices:['al','nog niet','nog geen'],answer:'al',
+   expl:'<strong>Al</strong> = déjà : <em>Is het gras al gemaaid?</em>'},
+  {type:'build',fr:'Elle n\'a pas encore sorti le chien.',hint:'de hond uitlaten',words:['Ze','heeft','de','hond','nog niet','uitgelaten','.'],answer:['Ze','heeft','de','hond','nog niet','uitgelaten','.'],
+   expl:'<strong>Nog niet</strong> avant le participe : <em>Ze heeft de hond nog niet uitgelaten.</em>'},
+  {type:'build',fr:'Le lit est déjà fait.',hint:'het bed opmaken',words:['Het','bed','is','al','opgemaakt','.'],answer:['Het','bed','is','al','opgemaakt','.'],
+   expl:'<strong>Al</strong> entre le verbe être et le participe : <em>Het bed is al opgemaakt.</em>'},
+  {type:'build',fr:'Je n\'ai pas encore sorti les sacs poubelles.',hint:'de vuilniszakken buitenzetten',words:['Ik','heb','de','vuilniszakken','nog niet','buitengezet','.'],answer:['Ik','heb','de','vuilniszakken','nog niet','buitengezet','.'],
+   expl:'<strong>Nog niet</strong> avant le participe : <em>Ik heb de vuilniszakken nog niet buitengezet.</em>'},
+  {type:'build',fr:'Il a déjà tondu le gazon.',hint:'het gras maaien',words:['Hij','heeft','het','gras','al','gemaaid','.'],answer:['Hij','heeft','het','gras','al','gemaaid','.'],
+   expl:'<strong>Al</strong> avant le participe : <em>Hij heeft het gras al gemaaid.</em>'},
+  {type:'write',fr:'Elle a déjà fait la vaisselle.',hint:'afwassen',answer:'Ze heeft al afgewassen.',alts:['ze heeft al afgewassen'],
+   expl:'<strong>Al</strong> entre l\'auxiliaire et le participe : <em>Ze heeft al afgewassen.</em>'},
+  {type:'write',fr:'Il n\'a pas encore surveillé le petit frère.',hint:'op de kleine broer passen',answer:'Hij heeft nog niet op de kleine broer gepast.',alts:['hij heeft nog niet op de kleine broer gepast'],
+   expl:'<strong>Nog niet</strong> car on nie l\'action (passen) : <em>Hij heeft nog niet op de kleine broer gepast.</em>'},
+  {type:'write',fr:'Je n\'ai pas encore sorti les sacs poubelles.',hint:'de vuilniszakken buitenzetten',answer:'Ik heb de vuilniszakken nog niet buitengezet.',alts:['ik heb de vuilniszakken nog niet buitengezet'],
+   expl:'<strong>Nog niet</strong> avant le participe séparable : <em>Ik heb de vuilniszakken nog niet buitengezet.</em>'},
+];
+
+/* NIVEAU 3 : TOUT MÉLANGÉ */
+const data3=[
+  {type:'qcm',sentence:'Ik koop het brood ____.',fr:'Je n\'achète pas le pain.',hint:'het brood = défini',choices:['geen','niet','nog niet'],answer:'niet',
+   expl:'<strong>Niet</strong> car het brood est défini (het) : <em>Ik koop het brood niet.</em>'},
+  {type:'qcm',sentence:'Ze heeft de schoenen ____ gepoetst.',fr:'Elle n\'a pas ciré les chaussures.',hint:'de schoenen = défini',choices:['geen','niet','nog niet'],answer:'niet',
+   expl:'<strong>Niet</strong> car de schoenen est défini : <em>Ze heeft de schoenen niet gepoetst.</em>'},
+  {type:'qcm',sentence:'Heb je de kooi al schoongemaakt? — Nee, ik heb de kooi ____ schoongemaakt.',fr:'Non, je n\'ai pas encore nettoyé la cage.',hint:'action pas encore faite',choices:['nog niet','nog geen','niet'],answer:'nog niet',
+   expl:'<strong>Nog niet</strong> = pas encore (action) : <em>Ik heb de kooi nog niet schoongemaakt.</em>'},
+  {type:'qcm2',sentence:'Ze gaat [A] naar de winkel [B].',fr:'Elle ne va pas au magasin.',hint:'',choices:['① — avant naar','② — en fin de phrase'],answer:'① — avant naar',
+   expl:'<strong>Niet</strong> avant le complément de direction : <em>Ze gaat niet naar de winkel.</em>'},
+  {type:'qcm2',sentence:'Het gras is [A] gemaaid [B].',fr:'Le gazon n\'est pas encore tondu.',hint:'',choices:['① — avant gemaaid','② — en fin de phrase'],answer:'① — avant gemaaid',
+   expl:'<strong>Niet</strong> avant le participe attribut : <em>Het gras is niet gemaaid.</em>'},
+  {type:'qcm2',sentence:'Hij ruimt de zolder [A] op [B].',fr:'Il ne range pas le grenier.',hint:'',choices:['① — avant op','② — en fin de phrase'],answer:'① — avant op',
+   expl:'<strong>Niet</strong> avant la particule séparable op : <em>Hij ruimt de zolder niet op.</em>'},
+  {type:'build',fr:'Il ne range pas la chambre.',hint:'opruimen est un verbe séparable',words:['Hij','ruimt','de','kamer','niet','op','.'],answer:['Hij','ruimt','de','kamer','niet','op','.'],
+   expl:'<strong>Niet</strong> avant la particule séparable op : <em>Hij ruimt de kamer niet op.</em>'},
+  {type:'build',fr:'Je ne fais pas les courses.',hint:'geen ou niet ? — boodschappen sans article',words:['Ik','doe','geen','boodschappen','.'],answer:['Ik','doe','geen','boodschappen','.'],
+   expl:'<strong>Geen</strong> devant un nom indéfini : <em>Ik doe geen boodschappen.</em>'},
+  {type:'build',fr:'Nous n\'arrosons pas les fleurs.',hint:'geen ou niet ?',words:['We','geven','de','bloemen','geen','water','.'],answer:['We','geven','de','bloemen','geen','water','.'],
+   expl:'<strong>Geen water</strong> (substance indéfinie) : <em>We geven de bloemen geen water.</em>'},
+  {type:'write',fr:'Elle ne fait pas la vaisselle.',hint:'afwassen est un verbe séparable',answer:'Ze wast niet af.',alts:['ze wast niet af'],
+   expl:'<strong>Niet</strong> avant la particule af : <em>Ze wast niet af.</em>'},
+  {type:'write',fr:'Elle ne débarrasse pas la table.',hint:'de tafel afruimen — verbe séparable',answer:'Ze ruimt de tafel niet af.',alts:['ze ruimt de tafel niet af'],
+   expl:'<strong>Niet</strong> avant la particule af : <em>Ze ruimt de tafel niet af.</em>'},
+  {type:'write',fr:'Ils ne cirent pas de chaussures le lundi.',hint:'schoenen poetsen',answer:'Ze poetsen geen schoenen op maandag.',alts:['ze poetsen geen schoenen op maandag'],
+   expl:'<strong>Geen</strong> devant nom pluriel indéfini : <em>Ze poetsen geen schoenen op maandag.</em>'},
+];
+
+/* ========== ÉTAT ========== */
+const PASS=7;
+let curLevel='1',lastLevel='1';
+let passed={1:false,2:false,3:false};
+let questions=[],qIdx=0,score=0,answered=false,builtWords=[],results=[];
+
+const modeLabel={qcm:'QCM',qcm2:'Où se place niet ?',build:'Remettre en ordre',write:'À écrire'};
+
+/* ========== UTILITAIRES ========== */
+function shuffle(a){let r=[...a];for(let i=r.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+id).classList.add('active');window.scrollTo(0,0);}
+function autoResize(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
+
+/* ========== MENU ========== */
+function selectLevel(l){
+  const req={1:null,2:'1',3:'2'};
+  if(req[l]&&!passed[req[l]]){
+    const msg=document.getElementById('lock-msg');
+    msg.textContent='Réussis le niveau '+req[l]+' d\'abord ('+PASS+'/15 minimum) !';
+    msg.classList.add('show');return;
+  }
+  document.getElementById('lock-msg').classList.remove('show');
+  curLevel=l;
+  ['1','2','3'].forEach(n=>document.getElementById('lcard-'+n).classList.toggle('selected',n===l));
+}
+
+/* ========== JEU ========== */
+function startGame(){
+  lastLevel=curLevel;
+  const map={1:data1,2:data2,3:data3};
+  const raw=shuffle([...map[curLevel]]);
+  questions=curLevel==='3'?raw.slice(0,15):raw;
+  qIdx=0;score=0;answered=false;results=[];
+  document.getElementById('score-chip').classList.add('show');
+  document.getElementById('progress-wrap').classList.add('show');
+  document.getElementById('header-sub').textContent='Niveau '+curLevel;
+  showView('game');loadQ();
+}
+
+function updateHeader(){
+  document.getElementById('score-chip').textContent=score+' pt';
+  const pct=Math.round(qIdx/questions.length*100);
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('prog-left').textContent='Question '+(qIdx+1)+'/'+questions.length;
+  document.getElementById('prog-right').textContent=pct+'%';
+}
+
+function loadQ(){
+  const q=questions[qIdx];answered=false;builtWords=[];
+  updateHeader();
+  document.getElementById('q-mode-badge').textContent=modeLabel[q.type];
+  document.getElementById('q-hint').textContent=q.hint?'('+q.hint+')':'';
+  document.getElementById('q-fr').textContent=q.fr?'→ '+q.fr:'';
+  document.getElementById('g-feedback').className='feedback';
+  document.getElementById('sticky-next').className='sticky-next';
+  ['zone-qcm','zone-build','zone-write'].forEach(z=>document.getElementById(z).style.display='none');
+
+  if(q.type==='qcm'){
+    const parts=q.sentence.split('____');
+    document.getElementById('q-sentence').innerHTML=parts.length===2
+      ?parts[0]+'<span class="blank">____</span>'+parts[1]:q.sentence;
+    document.getElementById('zone-qcm').style.display='block';
+    const cg=document.getElementById('qcm-choices');cg.innerHTML='';
+    shuffle(q.choices).forEach((c,i)=>{
+      const b=document.createElement('button');b.className='choice-btn';
+      b.innerHTML='<span class="choice-letter">'+'ABC'[i]+'</span><span>'+c+'</span>';
+      b.onclick=()=>qcmChoose(c,q,b,false,i);cg.appendChild(b);
+    });
+  }
+  else if(q.type==='qcm2'){
+    const s=q.sentence
+      .replace('[A]','<span class="blank-num">①</span>')
+      .replace('[B]','<span class="blank-num">②</span>');
+    document.getElementById('q-sentence').innerHTML=s;
+    document.getElementById('zone-qcm').style.display='block';
+    const cg=document.getElementById('qcm-choices');cg.innerHTML='';
+    q.choices.forEach((c,i)=>{
+      const b=document.createElement('button');b.className='choice-btn';
+      b.innerHTML='<span class="choice-letter">'+(i===0?'①':'②')+'</span><span>niet ici</span>';
+      b.onclick=()=>qcmChoose(c,q,b,true,i);cg.appendChild(b);
+    });
+  }
+  else if(q.type==='build'){
+    document.getElementById('q-sentence').innerHTML='';
+    document.getElementById('zone-build').style.display='block';
+    renderBuilt();renderBank(q);
+  }
+  else{
+    document.getElementById('q-sentence').innerHTML='';
+    const inp=document.getElementById('write-input');
+    inp.value='';inp.className='write-textarea';inp.disabled=false;inp.style.height='auto';
+    document.getElementById('zone-write').style.display='block';
+    setTimeout(()=>inp.focus(),100);
+  }
+}
+
+function qcmChoose(val,q,clicked,isQcm2,clickedIdx){
+  if(answered)return;answered=true;
+  const ok=val===q.answer;
+  const btns=[...document.querySelectorAll('.choice-btn')];
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    const bval=isQcm2?q.choices[i]:b.querySelector('span:last-child').textContent;
+    if(bval===q.answer)b.classList.add(ok&&b===clicked?'correct':'missed');
+    else if(b===clicked&&!ok)b.classList.add('wrong');
+  });
+  showFb(ok,q.answer,q.expl);
+}
+
+function renderBuilt(){
+  const el=document.getElementById('built-area');
+  if(!builtWords.length){el.innerHTML='<span style="color:#B0B0C0;font-weight:600;font-size:14px">Clique sur les mots ci-dessous…</span>';return;}
+  el.innerHTML=builtWords.map((w,i)=>'<span class="wchip" onclick="removeWord('+i+')">'+w+' ✕</span>').join(' ');
+}
+function renderBank(q){
+  const el=document.getElementById('word-bank');el.innerHTML='';
+  shuffle(q.words).forEach(w=>{
+    const b=document.createElement('button');b.className='wb-btn';b.dataset.w=w;b.textContent=w;
+    b.onclick=()=>addWord(w,b);el.appendChild(b);
+  });
+}
+function addWord(w,btn){if(btn.classList.contains('used'))return;btn.classList.add('used');builtWords.push(w);renderBuilt();}
+function removeWord(i){
+  const w=builtWords[i];builtWords.splice(i,1);renderBuilt();
+  const all=document.querySelectorAll('#word-bank .wb-btn');
+  for(let b of all){if(b.dataset.w===w&&b.classList.contains('used')){b.classList.remove('used');break;}}
+}
+function buildClear(){
+  builtWords=[];
+  document.querySelectorAll('#word-bank .wb-btn').forEach(b=>b.classList.remove('used'));
+  renderBuilt();
+}
+function buildCheck(){
+  const q=questions[qIdx];if(!builtWords.length||answered)return;answered=true;
+  document.querySelectorAll('#word-bank .wb-btn').forEach(b=>b.disabled=true);
+  const ok=builtWords.join(' ').trim().toLowerCase()===q.answer.join(' ').trim().toLowerCase();
+  showFb(ok,q.answer.join(' '),q.expl);
+}
+function writeCheck(){
+  const q=questions[qIdx];const inp=document.getElementById('write-input');
+  const val=inp.value.trim();if(!val||answered)return;answered=true;inp.disabled=true;
+  const norm=s=>s.toLowerCase().replace(/[.!?]/g,'').trim();
+  const ok=norm(val)===norm(q.answer)||(q.alts&&q.alts.some(a=>norm(val)===norm(a)));
+  inp.className='write-textarea '+(ok?'ok':'ko');
+  showFb(ok,q.answer,q.expl);
+}
+function showFb(ok,ans,expl){
+  if(ok)score++;results.push(ok);updateHeader();
+  const fb=document.getElementById('g-feedback');
+  fb.className='feedback '+(ok?'ok':'ko')+' show';
+  fb.innerHTML=(ok?'<div class="fb-icon">✅</div>':'<div class="fb-icon">❌</div>')
+    +(ok?'Bien joué ! ':'Réponse : <strong>'+ans+'</strong><br>')+expl;
+  const isLast=qIdx===questions.length-1;
+  document.getElementById('btn-next').textContent=isLast?'Voir mes résultats →':'Question suivante →';
+  document.getElementById('sticky-next').className='sticky-next show';
+  setTimeout(()=>window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}),100);
+}
+function nextQ(){qIdx++;if(qIdx>=questions.length)showEnd();else loadQ();}
+
+/* ========== FIN ========== */
+function showEnd(){
+  document.getElementById('score-chip').classList.remove('show');
+  document.getElementById('progress-wrap').classList.remove('show');
+  showView('end');
+  const tot=questions.length,pct=score/tot;
+  document.getElementById('stat-row').innerHTML=results.map(r=>'<div class="stat-dot '+(r?'ok':'ko')+'"></div>').join('');
+  document.getElementById('end-score').textContent=score+'/'+tot;
+  let trophy,title,msg;
+  if(pct>=0.9){trophy='🏆';title='Maître des corvées !';msg='Tu maîtrises parfaitement ce niveau !';}
+  else if(pct>=0.7){trophy='🥇';title='Excellent travail !';msg='Encore quelques points à consolider !';}
+  else if(pct>=0.5){trophy='🥈';title='Bien essayé !';msg='Rejoue pour progresser !';}
+  else{trophy='💪';title='Continue d\'essayer !';msg='Relis les règles et réessaie !';}
+  document.getElementById('end-trophy').textContent=trophy;
+  document.getElementById('end-title').textContent=title;
+  document.getElementById('end-msg').textContent=msg;
+
+  const unlockEl=document.getElementById('end-unlock-msg');
+  const wasLocked=!passed[lastLevel];
+  if(score>=PASS){
+    passed[lastLevel]=true;
+    document.getElementById('badge-'+lastLevel).style.display='block';
+    const next=String(Number(lastLevel)+1);
+    if(['2','3'].includes(next)){
+      document.getElementById('lcard-'+next).classList.remove('locked');
+      document.getElementById('lock-'+next).style.display='none';
+      if(wasLocked){unlockEl.textContent='🎉 Niveau '+next+' débloqué !';unlockEl.classList.add('show');}
+      else unlockEl.classList.remove('show');
+    } else {
+      if(wasLocked){unlockEl.textContent='🏆 Tu as terminé tous les niveaux !';unlockEl.classList.add('show');}
+    }
+  } else unlockEl.classList.remove('show');
+}
+
+function goMenu(){
+  document.getElementById('score-chip').classList.remove('show');
+  document.getElementById('progress-wrap').classList.remove('show');
+  document.getElementById('header-sub').textContent='Négation en néerlandais';
+  showView('menu');
+}
+function restartSame(){curLevel=lastLevel;startGame();}
+</script>
+</body>
+</html>
